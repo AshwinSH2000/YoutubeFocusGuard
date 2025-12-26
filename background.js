@@ -56,20 +56,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const title = message.title;
 
         if (!isEducational(title) && !isAllowedTime()) {
+            chrome.notifications.create({
+                type: "basic",
+                iconUrl: "icons/Yt.png",
+                title: "Focus Alert 🚫",
+                message: "This looks like a time-pass video. Allowed only after 11 PM."
+            });
 
+            chrome.tts.speak("Nope, Its Not Allowed, Ash. ", {
+                rate: 1.0,
+                pitch: 1.0,
+                volume: 1.0
+            });
             sendResponse({ action: "BLOCK" });
-            // chrome.notifications.create({
-            //     type: "basic",
-            //     iconUrl: "icons/Yt.png",
-            //     title: "Focus Alert 🚫",
-            //     message: "This looks like a time-pass video. Allowed only after 11 PM."
-            // });
 
-            // chrome.tts.speak("Nope, Its Not Allowed, Ash. ", {
-            //     rate: 1.0,
-            //     pitch: 1.0,
-            //     volume: 1.0
-            // });
         }
         else {
             sendResponse({ action: "ALLOW" })
