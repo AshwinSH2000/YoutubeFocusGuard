@@ -34,6 +34,9 @@ console.log("Background service worker started");
 
 
 function isEducational(title) {
+
+    if (title == '')
+        return true;
     const lowerTitle = title.toLowerCase();
     return educationalKeywords.some(keyword => lowerTitle.includes(keyword));
 }
