@@ -1,3 +1,8 @@
+//logic to catch and stop the exe of entire execution if screen doesnt have any video to be played.
+if (!window.location.href.includes("watch")) {
+    return;
+}
+
 function getVideoTitle() {
     console.log("Content script loaded on YouTube");
     const titleElement = document.querySelector("h1.title yt-formatted-string");
