@@ -56,33 +56,62 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // });
 
     if (message.type === "VIDEO_TITLE") {
-        const title = message.title;
+        classifyWithBackend(message.title).then(result => {
+            sendResponse(result);
+        });
+        // const title = message.title;
+        // if (!isEducational(title) && !isAllowedTime()) {
+        //     chrome.notifications.create({
+        //         type: "basic",
+        //         iconUrl: "icons/Yt.png",
+        //         title: "Focus Alert",
+        //         message: "This looks like a time-pass video. Allowed only after 11 PM."
+        //     });
+        //     chrome.tts.speak("Nope, Its Not Allowed! ", {
+        //         rate: 1.0,
+        //         pitch: 1.0,
+        //         volume: 1.0
+        //     });
+        //     sendResponse({ action: "BLOCK" });
+        // }
+        // else {
+        //     sendResponse({ action: "ALLOW" })
+        // }
 
-        if (!isEducational(title) && !isAllowedTime()) {
-            chrome.notifications.create({
-                type: "basic",
-                iconUrl: "icons/Yt.png",
-                title: "Focus Alert",
-                message: "This looks like a time-pass video. Allowed only after 11 PM."
-            });
-
-            chrome.tts.speak("Nope, Its Not Allowed! ", {
-                rate: 1.0,
-                pitch: 1.0,
-                volume: 1.0
-            });
-            sendResponse({ action: "BLOCK" });
-
-        }
-        else {
-            sendResponse({ action: "ALLOW" })
-        }
+        return true;
     }
-
-    return true;
 });
 
 chrome.runtime.onInstalled.addListener(() => {
     console.log("Extension installed or reloaded");
 });
 
+async function classifyWithBackend(title) {
+    try {
+        const response = await fetch("http://localhost:8000/classify", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ title })
+        });
+
+        const data = await response.json();
+
+        const now = new Date();
+        const hour = now.getHours();
+        const allowedTime = hour >= 20 && hour < 21;
+
+        if (data.category === "NON_TECH" && !allowedTime) {
+            return { action: "BLOCK" };
+        }
+
+        return { action: "ALLOW" };
+
+    } catch (error) {
+        console.error("Backend error:", error);
+
+        // allow if backend fails.. in case of any errors
+        return { action: "ALLOW" };
+    }
+}
