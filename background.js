@@ -62,11 +62,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             chrome.notifications.create({
                 type: "basic",
                 iconUrl: "icons/Yt.png",
-                title: "Focus Alert 🚫",
+                title: "Focus Alert",
                 message: "This looks like a time-pass video. Allowed only after 11 PM."
             });
 
-            chrome.tts.speak("Nope, Its Not Allowed, Ash. ", {
+            chrome.tts.speak("Nope, Its Not Allowed! ", {
                 rate: 1.0,
                 pitch: 1.0,
                 volume: 1.0
