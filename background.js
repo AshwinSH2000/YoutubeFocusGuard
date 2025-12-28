@@ -100,7 +100,7 @@ async function classifyWithBackend(title) {
 
         const now = new Date();
         const hour = now.getHours();
-        const allowedTime = hour >= 20 && hour < 21;
+        const allowedTime = hour >= 23 || hour < 1;
 
         if (data.category === "NON_TECH" && !allowedTime) {
             return { action: "BLOCK" };
@@ -110,7 +110,6 @@ async function classifyWithBackend(title) {
 
     } catch (error) {
         console.error("Backend error:", error);
-
         // allow if backend fails.. in case of any errors
         return { action: "ALLOW" };
     }
