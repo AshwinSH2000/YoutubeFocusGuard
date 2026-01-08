@@ -10,7 +10,8 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/*"],
+      "matches": ["*://www.youtube.com/embed/*", 
+                  "*://www.youtube.com/watch*"],
       "js": ["content.js"]
     }
   ],
