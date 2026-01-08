@@ -1,9 +1,14 @@
+let guardStarted = false;
+let lastUrl = location.href;
 
 function runYoutubeGuard() {
     //logic to catch and stop the exe of entire execution if screen doesnt have any video to be played.
-    if (!window.location.href.includes("watch")) {
-        return;
-    }
+    // if (!window.location.href.includes("watch")) {
+    //     guardStarted = false;
+    //     return;
+    // }
+    // if (guardStarted) return;
+    // guardStarted = true;
 
     console.log(" Content script loaded on:", window.location.href);
     function getVideoTitle() {
@@ -14,6 +19,8 @@ function runYoutubeGuard() {
     let lastTitle = "";
 
     setInterval(() => {
+        // if (!title) return;
+
         // console.log("Content script loaded on YouTube ");
 
         const title = getVideoTitle();
@@ -98,6 +105,27 @@ function runYoutubeGuard() {
 
 }
 
+// let lastUrl = location.href;
+// let guardStarted = false;
 
+function maybeRunGuard() {
+    if (!location.href.includes("watch")) {
+        guardStarted = false;
+        return;
+    }
 
-runYoutubeGuard();
+    if (guardStarted) return;
+    guardStarted = true;
+
+    runYoutubeGuard();
+}
+
+maybeRunGuard(); // initial check
+
+// SPA navigation watcher in the yt hompeage
+new MutationObserver(() => {
+    if (location.href !== lastUrl) {
+        lastUrl = location.href;
+        setTimeout(maybeRunGuard, 500);
+    }
+}).observe(document, { subtree: true, childList: true });
