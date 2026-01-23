@@ -1,5 +1,6 @@
 const educationalKeywords = [
     "dsa",
+    "cloud",
     "data structures",
     "algorithms",
     "algorithm",
@@ -41,6 +42,7 @@ function isEducational(title) {
     return educationalKeywords.some(keyword => lowerTitle.includes(keyword));
 }
 
+//this method is not being used
 function isAllowedTime() {
     const now = new Date();
     const hour = now.getHours();
@@ -100,7 +102,9 @@ async function classifyWithBackend(title) {
 
         const now = new Date();
         const hour = now.getHours();
-        const allowedTime = hour >= 23 || hour < 1;
+        const allowedTime = hour >= 2 && hour < 4;
+        // const allowedTime = hour >= 23 || hour < 1;
+
 
         if (data.category === "NON_TECH" && !allowedTime) {
             return { action: "BLOCK" };

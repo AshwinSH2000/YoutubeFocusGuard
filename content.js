@@ -66,7 +66,7 @@ function runYoutubeGuard() {
     <div id="focus-box">
       <h2>Focus Guard</h2>
       <p>${reasonText}</p>
-      <p><b>Allowed time:</b> 11:00 PM - 1:00 AM</p>
+      <p><b>Allowed time:</b> 2:00 AM - 4:00 AM</p>
     </div>
   `;
 
