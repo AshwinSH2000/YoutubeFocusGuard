@@ -79,25 +79,27 @@ def classify_video(data: VideoRequest):
 
     max_similarity = max(similarities)
 
-    THRESHOLD = 0.55  # we’ll tune this
+    THRESHOLD = 0.55  
+    KEYWORD_THRESHOLD = 0.35    #rough estimate for now. to be tuned
 
     if max_similarity >= THRESHOLD:
         return {
             "category": "TECH",
-            "confidence": round(float(max_similarity), 3)
+            "confidence": str(round(float(max_similarity), 3))+" (high->embedding-based)"
         }
-
-    tech_keywords = [
-        "dsa", "algorithm", "data structure", "computer",
-        "programming", "coding", "development", "system design",
-        "optimization", "ai", "machine learning", "jimny"
-    ]
-    is_tech = any(keyword in title for keyword in tech_keywords)
-    return {
-        "category": "TECH" if is_tech else "NON_TECH",
-        "confidence": "low (keyword-based)"
-    }
-    # return {
-    #     "category": "NON_TECH",
-    #     "confidence": round(float(max_similarity), 3)
-    # }
+    elif max_similarity >= KEYWORD_THRESHOLD:
+        tech_keywords = [
+            "dsa", "algorithm", "data structure", "computer",
+            "programming", "coding", "development", "system design",
+            "optimization", "ai", "machine learning"
+        ]
+        is_tech = any(keyword in title for keyword in tech_keywords)
+        return {
+            "category": "TECH" if is_tech else "NON_TECH",
+            "confidence": str(round(float(max_similarity), 3))+" (low->keyword-based)"
+        }
+    else:
+        return {
+            "category": "NON_TECH",
+            "confidence": str(round(float(max_similarity), 3))+" (low->embedding-based)"
+        }
