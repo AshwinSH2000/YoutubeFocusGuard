@@ -1,3 +1,11 @@
+let resultsTimer = null;
+let resultsStartTime = null;
+let lastResultsUrl = null;
+
+
+// const RESULTS_TIME_LIMIT = 15 * 60 * 1000; // 15 minutes
+const RESULTS_TIME_LIMIT = 6 * 1000; // 15 minutes
+
 let guardStarted = false;
 let lastUrl = location.href;
 
@@ -57,21 +65,6 @@ function runYoutubeGuard() {
         alert("Time-pass video detected. Allowed only between 11 PM and 1 AM.");
     }
 
-    function showOverlay(reasonText) {
-        if (document.getElementById("focus-overlay")) return;
-        const overlay = document.createElement("div");
-        overlay.id = "focus-overlay";
-
-        overlay.innerHTML = `
-    <div id="focus-box">
-      <h2>Focus Guard</h2>
-      <p>${reasonText}</p>
-      <p><b>Allowed time:</b> 2:00 AM - 4:00 AM</p>
-    </div>
-  `;
-
-        document.body.appendChild(overlay);
-    }
     const style = document.createElement("style");
     style.textContent = `
 #focus-overlay {
@@ -108,17 +101,45 @@ function runYoutubeGuard() {
 // let lastUrl = location.href;
 // let guardStarted = false;
 
+// function maybeRunGuard() {
+//     if (!location.href.includes("watch")) {
+//         guardStarted = false;
+//         // return;
+//     }
+
+//     if (location.href.includes("hello")) {
+//         showOverlay2("hi");
+//         console.log("HIHIHIHIHIHIHIHIHIHIHIHIHIHIHIHIHIHI");
+//     }
+
+//     if (guardStarted) return;
+//     guardStarted = true;
+
+//     runYoutubeGuard();
+// }
 function maybeRunGuard() {
-    if (!location.href.includes("watch")) {
+    const url = location.href;
+
+    // WATCH PAGE → existing logic
+    if (url.includes("watch")) {
+        resetResultsTimer();
         guardStarted = false;
+        runYoutubeGuard();
         return;
     }
 
-    if (guardStarted) return;
-    guardStarted = true;
+    // RESULTS PAGE → start tracking time
+    if (url.includes("results")) {
+        guardStarted = false;
+        handleResultsPage();
+        return;
+    }
 
-    runYoutubeGuard();
+    // Any other page → reset everything
+    guardStarted = false;
+    resetResultsTimer();
 }
+
 
 maybeRunGuard(); // initial check
 
@@ -129,3 +150,49 @@ new MutationObserver(() => {
         setTimeout(maybeRunGuard, 500);
     }
 }).observe(document, { subtree: true, childList: true });
+
+
+function handleResultsPage() {
+    const currentUrl = location.href;
+
+    // If this is a new results URL, reset timer
+    if (lastResultsUrl !== currentUrl) {
+        lastResultsUrl = currentUrl;
+        resultsStartTime = Date.now();
+
+        if (resultsTimer) {
+            clearTimeout(resultsTimer);
+        }
+
+        resultsTimer = setTimeout(() => {
+            showOverlay("You’ve been browsing search results for too long. Pick a video or get back to work.");
+        }, RESULTS_TIME_LIMIT);
+
+        console.log("Started results timer");
+    }
+}
+
+function resetResultsTimer() {
+    if (resultsTimer) {
+        clearTimeout(resultsTimer);
+        resultsTimer = null;
+    }
+    resultsStartTime = null;
+    lastResultsUrl = null;
+}
+
+function showOverlay(reasonText) {
+    if (document.getElementById("focus-overlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "focus-overlay";
+
+    overlay.innerHTML = `
+    <div id="focus-box">
+      <h2>Focus Guard</h2>
+      <p>${reasonText}</p>
+      <p><b>Allowed time:</b> 2:00 AM - 4:00 AM</p>
+    </div>
+  `;
+
+    document.body.appendChild(overlay);
+}
