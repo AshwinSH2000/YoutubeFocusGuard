@@ -9,6 +9,36 @@ const RESULTS_TIME_LIMIT = 6 * 1000; // 15 minutes
 let guardStarted = false;
 let lastUrl = location.href;
 
+const style = document.createElement("style");
+style.textContent = `
+#focus-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#focus-box {
+  background: #111;
+  color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 400px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+#focus-box h2 {
+  margin-bottom: 10px;
+}
+`;
+
 function runYoutubeGuard() {
     //logic to catch and stop the exe of entire execution if screen doesnt have any video to be played.
     // if (!window.location.href.includes("watch")) {
@@ -65,35 +95,6 @@ function runYoutubeGuard() {
         alert("Time-pass video detected. Allowed only between 11 PM and 1 AM.");
     }
 
-    const style = document.createElement("style");
-    style.textContent = `
-#focus-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.85);
-  z-index: 999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#focus-box {
-  background: #111;
-  color: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  width: 400px;
-  text-align: center;
-  font-family: Arial, sans-serif;
-}
-
-#focus-box h2 {
-  margin-bottom: 10px;
-}
-`;
     document.head.appendChild(style);
 
 }
@@ -123,7 +124,7 @@ function maybeRunGuard() {
     // WATCH PAGE → existing logic
     if (url.includes("watch")) {
         resetResultsTimer();
-        guardStarted = false;
+        guardStarted = true;
         runYoutubeGuard();
         return;
     }
@@ -144,10 +145,16 @@ function maybeRunGuard() {
 maybeRunGuard(); // initial check
 
 // SPA navigation watcher in the yt hompeage
+// it fires anytime there has been a change in the html structure of the page. 
+// until then adu muska haaki baabu maadtiratte. 
 new MutationObserver(() => {
     if (location.href !== lastUrl) {
         lastUrl = location.href;
         setTimeout(maybeRunGuard, 500);
+        // this 500ms is a safety cushion.. as in SPA when you lcick a video, it is not 
+        // refreshed. instead it just swaps the content. hence this cushion is to 
+        // wait untiil the contents are properly swapped so that maybrRunGuard can 
+        // read it accuratelu. 
     }
 }).observe(document, { subtree: true, childList: true });
 
@@ -169,6 +176,8 @@ function handleResultsPage() {
         }, RESULTS_TIME_LIMIT);
 
         console.log("Started results timer");
+
+        document.head.appendChild(style);
     }
 }
 
