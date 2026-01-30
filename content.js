@@ -1,10 +1,10 @@
 let resultsTimer = null;
 let resultsStartTime = null;
 let lastResultsUrl = null;
-
+let videoCheckInterval = null; // var to chekc if back button is pressed or not
 
 // const RESULTS_TIME_LIMIT = 15 * 60 * 1000; // 15 minutes
-const RESULTS_TIME_LIMIT = 6 * 1000; // 15 minutes
+const RESULTS_TIME_LIMIT = 60 * 1000; // 60 seconds
 
 let guardStarted = false;
 let lastUrl = location.href;
@@ -56,7 +56,8 @@ function runYoutubeGuard() {
     }
     let lastTitle = "";
 
-    setInterval(() => {
+    if (videoCheckInterval) clearInterval(videoCheckInterval);
+    videoCheckInterval = setInterval(() => {
         // if (!title) return;
 
         // console.log("Content script loaded on YouTube ");
@@ -119,15 +120,26 @@ function runYoutubeGuard() {
 //     runYoutubeGuard();
 // }
 function maybeRunGuard() {
+
+    removeOverlay();
     const url = location.href;
 
     // WATCH PAGE → existing logic
     if (url.includes("watch")) {
         resetResultsTimer();
+        if (guardStarted) return;
         guardStarted = true;
         runYoutubeGuard();
         return;
     }
+
+    //thiis is tocheck if the user has left the "watch" page and gone back.  
+    if (videoCheckInterval) {
+        clearInterval(videoCheckInterval);
+        videoCheckInterval = null;
+    }
+
+    guardStarted = false; // Reset the gatekeeper
 
     // RESULTS PAGE → start tracking time
     if (url.includes("results")) {
@@ -136,7 +148,7 @@ function maybeRunGuard() {
         return;
     }
 
-    // Any other page → reset everything
+    // Any other page means reset everything
     guardStarted = false;
     resetResultsTimer();
 }
@@ -204,4 +216,11 @@ function showOverlay(reasonText) {
   `;
 
     document.body.appendChild(overlay);
+}
+
+function removeOverlay() {
+    const existingOverlay = document.getElementById("focus-overlay");
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
 }
