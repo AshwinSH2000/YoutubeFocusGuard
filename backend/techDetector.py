@@ -59,8 +59,46 @@ TECH_EXAMPLES = [
     "software project tutorial"
 ]
 
+NEGATIVE_EXAMPLES = [
+    # Entertainment & pop culture
+    "movie review",
+    "celebrity interview",
+    "tv show recap",
+    "trailer reaction",
+    "behind the scenes film",
+
+    # Motivation / opinion / lifestyle
+    "motivational talk",
+    "self improvement podcast",
+    "life advice",
+    "personal growth story",
+    "success mindset",
+
+    # Business / marketing (often overlaps with tech terms)
+    "startup motivation",
+    "marketing strategy",
+    "growth hacking",
+    "saas business advice",
+    "entrepreneur podcast",
+
+    # News & commentary
+    "tech news discussion",
+    "opinion on artificial intelligence",
+    "future of technology debate",
+
+    # Gaming / fiction collisions
+    "video game storyline",
+    "game ai behavior",
+    "sci fi technology explained",
+
+    # Animals / literal collisions 
+    "python snake documentary",
+    "animal behavior study"
+]
+
 
 TECH_EMBEDDINGS = model.encode(TECH_EXAMPLES, normalize_embeddings=True)
+NON_TECH_EMBEDDINGS = model.encode(NEGATIVE_EXAMPLES, normalize_embeddings = True)
 
 def cosine_similarity(a, b):
     return np.dot(a, b)
@@ -103,6 +141,56 @@ def health_check():
 
 
 @app.post("/classify")
+def classify_video(data: VideoRequest):
+    title = data.title.strip().lower()
+
+    if not title:
+        return {"category": "TECH", "confidence": 1.0}
+
+    title_embedding = model.encode([title], normalize_embeddings=True)[0]
+
+    similarities = [
+        cosine_similarity(title_embedding, tech_emb)
+        for tech_emb in TECH_EMBEDDINGS
+    ]
+
+    neg_similarities = [
+        cosine_similarity(title_embedding, non_tech_emb)
+        for non_tech_emb in NON_TECH_EMBEDDINGS
+    ]
+
+    # for i in range(len(similarities)):
+    #     similarities[i] = similarities[i] - neg_similarities[i]
+
+    max_similarity = max(similarities) - max(neg_similarities)
+
+    THRESHOLD = 0.55  
+    KEYWORD_THRESHOLD = 0.35    #rough estimate for now. to be tuned
+
+    if max_similarity >= THRESHOLD:
+        return {
+            "category": "TECH",
+            "confidence": str(round(float(max_similarity), 3))+" (high->embedding-based)"
+        }
+    elif max_similarity >= KEYWORD_THRESHOLD:
+        tech_keywords = [
+            "dsa", "algorithm", "data structure", "computer",
+            "programming", "coding", "development", "system design",
+            "optimization", "ai", "machine learning"
+        ]
+        is_tech = any(keyword in title for keyword in tech_keywords)
+        return {
+            "category": "TECH" if is_tech else "NON_TECH",
+            "confidence": str(round(float(max_similarity), 3))+" (low->keyword-based)"
+        }
+    else:
+        return {
+            "category": "NON_TECH",
+            "confidence": str(round(float(max_similarity), 3))+" (low->embedding-based)"
+        }
+
+
+@app.post("/classify_only_positive")
 def classify_video(data: VideoRequest):
     title = data.title.strip().lower()
 
