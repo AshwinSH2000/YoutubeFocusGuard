@@ -9,17 +9,56 @@ app = FastAPI()
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 TECH_EXAMPLES = [
+    # General programming & CS
+    "software engineering",
+    "computer science",
+    "programming concepts",
+    "coding fundamentals",
     "data structures and algorithms",
-    "computer science lecture",
-    "system design interview",
+    "system design",
+
+    # Courses / tutorials / learning formats
     "programming tutorial",
-    "backend development",
-    "machine learning basics",
+    "coding course",
+    "software development course",
+    "learn programming from scratch",
+    "full stack development tutorial",
+    "backend development tutorial",
+
+    # Languages & frameworks (high-signal)
+    "python programming",
+    "django web development",
+    "fastapi backend",
+    "javascript development",
+    "api development",
+    "rest api design",
+
+    # ML / AI (modern phrasing)
+    "machine learning",
+    "deep learning",
+    "reinforcement learning",
+    "artificial intelligence",
+    "llm fundamentals",
+    "neural networks explained",
+
+    # Infrastructure / systems
     "distributed systems",
     "operating systems",
     "database systems",
-    "coding interview preparation"
+    "scalable backend architecture",
+    "cloud computing basics",
+
+    # Interview / career
+    "coding interview preparation",
+    "software engineering interview",
+    "system design interview",
+
+    # Real-world dev phrasing
+    "build an api",
+    "backend project walkthrough",
+    "software project tutorial"
 ]
+
 
 TECH_EMBEDDINGS = model.encode(TECH_EXAMPLES, normalize_embeddings=True)
 
