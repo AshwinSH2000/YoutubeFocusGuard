@@ -1,0 +1,43 @@
+
+🛠 Focus Guard: Logic Breakdown
+1. The Global State (The Brain)
+The script starts by defining variables that persist across different page views.
+	•	resultsTimer: Holds the "ID" of the active countdown. This is essential so we can cancel it if the user searches for something else.
+	•	guardStarted: A gatekeeper (boolean). It prevents the video-checking logic from starting multiple times and overlapping.
+	•	lastUrl: A "memory" of where the user just was, used to detect navigation without a full page refresh.
+2. The MutationObserver (The Watchman)
+YouTube is a Single Page Application (SPA), meaning it doesn't "reload" when you click a video; it just swaps content.
+	•	The Logic: It watches the document for any HTML changes.
+	•	The Action: If the current URL is different from lastUrl, it waits 500ms (to let the page finish loading) and then triggers maybeRunGuard().
+
+3. The Router: maybeRunGuard()
+This function acts as a traffic controller. Every time the URL changes, it decides which "mode" to enter:
+Page Type
+Action Taken
+Watch Page (/watch)
+Resets search timers and starts the Video Title Guard.
+Results Page (/results)
+Resets the video guard and starts the Search Timer.
+Other Pages
+Resets everything (cleans the slate).
+
+
+4. Mode A: The Video Guard (runYoutubeGuard)
+Once on a video page, the script needs to ensure you aren't watching "brain rot" or non-educational content.
+	1	Interval (3s): It starts a heartbeat that runs every 3 seconds.
+	2	Scraping: It grabs the video title from the HTML (h1.title).
+	3	Communication: It sends the title to chrome.runtime.sendMessage.
+	4	Decision: The background script (AI/Logic) replies. If it says "BLOCK", the script calls pauseVideo() and showOverlay().
+
+5. Mode B: The Search Timer (handleResultsPage)
+This prevents "Search Loop Procrastination"—the act of endlessly scrolling for the "perfect" video.
+	1	New Search Detection: It checks if the search URL is different from the last one.
+	2	Timer Reset: If you search for something new, it kills the previous timer using clearTimeout(resultsTimer).
+	3	The Countdown: It starts a new setTimeout. If you stay on this search page longer than RESULTS_TIME_LIMIT, the overlay is triggered.
+	4	The Fix: This function now ensures that the CSS Styles are injected into the page so the overlay is actually visible.
+
+6. The Enforcer: showOverlay()
+This is the final step. It creates a "Wall" between the user and the content.
+	•	It creates a <div> that covers the entire screen.
+	•	It injects a message explaining why the user is being blocked.
+	•	It uses a high z-index to make sure it sits on top of all YouTube's native elements.
